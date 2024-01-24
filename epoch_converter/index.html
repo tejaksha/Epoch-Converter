@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epoch Converter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+
+</head>
+<body>
+    <section class="clock-section">
+        <div id="epochClock" class="epoch-clock">
+            <div class="hours"></div>
+            <div class="minutes"></div>
+            <div class="seconds"></div>
+        </div>
+        <div id="humanTime" class="human-time"></div>
+    </section>
+    
+    <div class="ghost-theme">
+        <header>
+            <h1>Epoch Converter</h1>
+        </header>
+        <section class="clock-section">
+            <div id="epochClock" class="epoch-clock"></div>
+            <div id="humanTime" class="human-time"></div>
+        </section>
+        <section class="converter-section">
+            <label for="epochInput">Epoch Timestamp:</label>
+            <input type="text" id="epochInput" placeholder="Enter Epoch Timestamp" />
+            <button onclick="convertEpoch()">Convert</button>
+            
+            <div id="result" class="result"></div>
+        </section>
+    </div>
+
+    <script>
+        function updateClock() {
+            var epochClockElement = document.getElementById('epochClock');
+            var humanTimeElement = document.getElementById('humanTime');
+
+            var currentEpoch = Math.floor(Date.now() / 1000);
+            epochClockElement.innerText = 'Current Epoch Time: ' + currentEpoch;
+
+            var currentDate = new Date();
+            humanTimeElement.innerText = 'Current Time: ' + currentDate.toUTCString();
+        }
+        
+
+        function convertEpoch() {
+    var epochInput = document.getElementById('epochInput').value;
+
+    fetch('/convert?timestamp=' + epochInput)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Data received:', data); // Log the received data
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            var resultElement = document.getElementById('result');
+            resultElement.innerHTML = ''; // Clear previous content
+
+            var lines = data.result.split('\n');
+
+            lines.forEach(line => {
+                var paragraph = document.createElement('p');
+                paragraph.innerText = line;
+                resultElement.appendChild(paragraph);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            var resultElement = document.getElementById('result');
+            resultElement.innerHTML = '<p class="error-line">Error fetching data. Please try again.</p>';
+        });
+}
+
+        // Update clock every second
+        setInterval(updateClock, 1000);
+        updateClock();  // Initial update
+    </script>
+</body>
+</html>
